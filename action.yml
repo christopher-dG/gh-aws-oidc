@@ -1,0 +1,15 @@
+name: GitHub-AWS-OIDC
+description: Set AWS_WEB_IDENTITY_TOKEN_FILE via OIDC
+inputs:
+  role-arn:
+    description: AWS IAM role ARN
+    required: true
+runs:
+  using: composite
+  steps:
+    - run: |
+        token_file="$(mktemp)"
+        curl -s -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" | jq -r .value > "$token_file"
+        echo "::add-mask::$(<$token_file)"
+        echo "AWS_WEB_IDENTITY_TOKEN_FILE=$token_file" >> "$GITHUB_ENV"
+        echo "AWS_ROLE_ARN=${{ inputs.role-arn }}" >> "$GITHUB_ENV"
