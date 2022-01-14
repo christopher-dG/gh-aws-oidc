@@ -8,9 +8,33 @@ runs:
   using: composite
   steps:
     - run: |
+        die() {
+          echo "::error::$1"
+          exit 1
+        }
+
+        for x in URL TOKEN; do
+          k="ACTIONS_ID_TOKEN_REQUEST_$x"
+          eval "v=\$$k"
+          [ -z "$v" ] && die "Variable $k missing! Have you set permissions.id-token to 'write'?"
+        done
+
+        if ! resp="$(curl -sSf --retry 10 -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com")"; then
+          die "Getting WebIdentity token failed!"
+        fi
+
+        if ! token="$(echo "$resp" | jq -r .value)"; then
+          die "Invalid JSON response!"
+        fi
+
+        if [ -z "$token" ] || [ "$token" = null ]; then
+          die "Response did not contain token value!"
+        fi
+
+        echo "::add-mask::$token"
         token_file="$(mktemp)"
-        curl -s -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" | jq -r .value > "$token_file"
-        echo "::add-mask::$(<$token_file)"
+        echo "$token" > "$token_file"
+
         echo "AWS_WEB_IDENTITY_TOKEN_FILE=$token_file" >> "$GITHUB_ENV"
         echo "AWS_ROLE_ARN=${{ inputs.role-arn }}" >> "$GITHUB_ENV"
       shell: bash
