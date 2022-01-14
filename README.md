@@ -14,6 +14,7 @@ jobs:
       - uses: christopher-dG/gh-aws-oidc@v1
         with:
           role-arn: arn:aws:iam::<ACCOUNT_ID>:role/<ROLE_NAME>
+          region: us-east-1
       - name: Test credentials
         run: aws sts get-caller-identity
       - name: Let credentials expire

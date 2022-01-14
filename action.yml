@@ -4,6 +4,9 @@ inputs:
   role-arn:
     description: AWS IAM role ARN
     required: true
+  region:
+    description: AWS region to use
+    required: true
 runs:
   using: composite
   steps:
@@ -37,4 +40,5 @@ runs:
 
         echo "AWS_WEB_IDENTITY_TOKEN_FILE=$token_file" >> "$GITHUB_ENV"
         echo "AWS_ROLE_ARN=${{ inputs.role-arn }}" >> "$GITHUB_ENV"
+        echo "AWS_DEFAULT_REGION=${{ inputs.region }}" >> "$GITHUB_ENV"
       shell: bash
