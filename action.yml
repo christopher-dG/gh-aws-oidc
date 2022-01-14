@@ -13,3 +13,4 @@ runs:
         echo "::add-mask::$(<$token_file)"
         echo "AWS_WEB_IDENTITY_TOKEN_FILE=$token_file" >> "$GITHUB_ENV"
         echo "AWS_ROLE_ARN=${{ inputs.role-arn }}" >> "$GITHUB_ENV"
+      shell: bash
